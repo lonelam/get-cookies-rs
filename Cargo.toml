@@ -1,0 +1,25 @@
+[package]
+name = "get-cookies-rs"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Get cookies from a webview2 window"
+homepage = "https://github.com/lonelam/get-cookies-rs"
+documentation = "https://lonelam.github.io/get-cookies-rs/"
+repository = "https://github.com/lonelam/get-cookies-rs"
+authors = ["Lonelam <lonelam@gmail.com>"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+futures = "0.3.30"
+tao = { version = "0.24.1", features = ["serde", "rwh_05"] }
+tokio = { version = "1.35.1", features = ["full"] }
+webview2-com = "0.28.0"
+windows = { version = "0.52.0", features = ["Win32_System_Com", "Win32_Foundation", "implement"] }
+windows-core = { version = "0.52.0", features = ["implement"] }
+wry = "0.35.2"
+
+[[bin]]
+name = "get-cookies"
+path = "src/main.rs"
