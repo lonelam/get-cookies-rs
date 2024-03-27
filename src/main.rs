@@ -1,5 +1,5 @@
 // use windows::Win32::System::Com::IUnknown;
-use get_cookies_rs::read_cookie;
+use get_cookies::read_cookie;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
