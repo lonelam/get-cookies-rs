@@ -15,7 +15,10 @@ use tao::{
 };
 use wry::{WebView, WebViewBuilder, WebViewExtWindows};
 
-pub async fn read_cookie(target_url: &str) -> wry::Result<String> {
+pub async fn read_cookie_until(
+    target_url: &str,
+    matcher: Box<dyn Fn(&String) -> bool>,
+) -> Result<String, Box<dyn std::error::Error>> {
     let domain_str = String::from(target_url);
 
     let (tx, mut rx) = mpsc::channel::<String>(32);
@@ -65,8 +68,8 @@ pub async fn read_cookie(target_url: &str) -> wry::Result<String> {
         });
     });
 
-    let event_loop_proxy = event_loop_rx.await.unwrap();
-    println!("Start spawning");
+    let event_loop_proxy = event_loop_rx.await?;
+    // println!("Start spawning");
     let _ = tokio::spawn(start_send_user_event_by_interval(event_loop_proxy));
     loop {
         let cookie_str = rx.recv().await;
@@ -76,9 +79,17 @@ pub async fn read_cookie(target_url: &str) -> wry::Result<String> {
             continue;
         }
         let cookie_str = cookie_str.unwrap();
-        println!("cookie_str: {}", cookie_str);
-        if cookie_str.contains("sessionid") {
-            return wry::Result::Ok(cookie_str);
+        // println!("cookie_str: {}", cookie_str);
+        if matcher(&cookie_str) {
+            return Ok(cookie_str);
         }
     }
+}
+
+pub async fn read_cookie(target_url: &str) -> Result<String, Box<dyn std::error::Error>> {
+    read_cookie_until(
+        target_url,
+        Box::new(|latest_cookie_str| latest_cookie_str.contains("sessionid")),
+    )
+    .await
 }
