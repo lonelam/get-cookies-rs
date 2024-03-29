@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::sync::Arc;
 use tao::event_loop::EventLoopProxy;
 use tao::platform::windows::EventLoopBuilderExtWindows;
@@ -15,9 +16,9 @@ use tao::{
 };
 use wry::{WebView, WebViewBuilder, WebViewExtWindows};
 
-pub async fn read_cookie_until(
+pub async fn read_cookie_until<T: Fn(&String) -> bool>(
     target_url: &str,
-    matcher: Box<dyn Fn(&String) -> bool>,
+    matcher: T,
 ) -> Result<String, Box<dyn std::error::Error>> {
     let domain_str = String::from(target_url);
 
@@ -87,9 +88,8 @@ pub async fn read_cookie_until(
 }
 
 pub async fn read_cookie(target_url: &str) -> Result<String, Box<dyn std::error::Error>> {
-    read_cookie_until(
-        target_url,
-        Box::new(|latest_cookie_str| latest_cookie_str.contains("sessionid")),
-    )
+    read_cookie_until(target_url, |latest_cookie_str| {
+        latest_cookie_str.contains("sessionid")
+    })
     .await
 }
