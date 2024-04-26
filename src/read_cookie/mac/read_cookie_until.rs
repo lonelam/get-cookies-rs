@@ -2,27 +2,44 @@ use super::user_event::{CookieReadEvent, EventType};
 use cocoa::foundation::{NSArray, NSString};
 use objc::{msg_send, sel, sel_impl};
 use std::error::Error;
-use std::process::exit;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use tao::event::{Event, StartCause, WindowEvent};
 use tao::event_loop::{ControlFlow, EventLoopProxy};
 use tao::platform::macos::EventLoopWindowTargetExtMacOS;
 use tao::platform::run_return::EventLoopExtRunReturn;
 use tao::{event_loop::EventLoopBuilder, window::WindowBuilder};
-use tokio::time;
-use tokio::time::Duration;
 use wry::{WebView, WebViewBuilder, WebViewExtMacOS};
 
-async fn start_send_user_event_by_interval(event_loop_proxy: EventLoopProxy<CookieReadEvent>) {
+fn start_send_user_event_by_interval(
+    event_loop_proxy: EventLoopProxy<CookieReadEvent>,
+    cookie_returned: Arc<Mutex<Option<String>>>,
+) -> std::thread::JoinHandle<()> {
     println!("Start ticking...");
+    // Set the interval duration
+    let interval = std::time::Duration::from_secs(1);
 
-    let mut interval = time::interval(Duration::from_secs(1));
-    loop {
-        interval.tick().await;
-        let _ = event_loop_proxy.send_event(CookieReadEvent {
-            m_type: EventType::CookieRead,
-        });
-    }
+    // Create a new thread for the interval timer
+    let handle: std::thread::JoinHandle<()> = std::thread::spawn(move || {
+        let mut next_tick = std::time::Instant::now() + interval;
+        loop {
+            // Wait until the next tick time
+            let now = std::time::Instant::now();
+            if now < next_tick {
+                std::thread::sleep(next_tick - now);
+            }
+
+            if cookie_returned.lock().unwrap().is_some() {
+                break;
+            }
+            // Calculate the next tick time
+            next_tick += interval;
+
+            let _ = event_loop_proxy.send_event(CookieReadEvent {
+                m_type: EventType::CookieRead,
+            });
+        }
+    });
+    handle
 }
 
 pub fn read_cookie_until_sync<T: Fn(&String) -> bool + Send + 'static>(
@@ -32,9 +49,9 @@ pub fn read_cookie_until_sync<T: Fn(&String) -> bool + Send + 'static>(
     let domain_str = String::from(target_url);
 
     let pattern_matcher = Box::new(matcher);
-    let (tx, mut rx) = tokio::sync::mpsc::channel::<String>(32);
-    let (event_loop_tx, event_loop_rx) =
-        tokio::sync::oneshot::channel::<EventLoopProxy<CookieReadEvent>>();
+    let returned_cookie: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
+    let p_returned_cookie_for_completion_handler = returned_cookie.clone();
+    let p_returned_cookie_for_timer = returned_cookie.clone();
 
     let mut event_loop = EventLoopBuilder::<CookieReadEvent>::with_user_event().build();
     let window = WindowBuilder::new()
@@ -48,7 +65,8 @@ pub fn read_cookie_until_sync<T: Fn(&String) -> bool + Send + 'static>(
         .build()
         .expect("Failed to build WebView");
     let event_loop_proxy = event_loop.create_proxy();
-    event_loop_tx.send(event_loop_proxy).unwrap();
+    // event_loop_tx.send(event_loop_proxy).unwrap();
+    let _ = start_send_user_event_by_interval(event_loop_proxy, p_returned_cookie_for_timer);
     let event_loop_proxy = event_loop.create_proxy();
     let completion_handler = block::ConcreteBlock::new(move |http_cookies: cocoa::base::id| {
         // println!("Cookie has read");
@@ -79,8 +97,11 @@ pub fn read_cookie_until_sync<T: Fn(&String) -> bool + Send + 'static>(
             }
             // println!("The current cookie is {}={}", cookie_name, cookie_value);
         }
+        // #[cfg(debug_assertions)]
+        // println!("The current cookies is: {}", cookie_str);
         if pattern_matcher(&cookie_str) {
-            tx.send(cookie_str);
+            let mut p_cookie = p_returned_cookie_for_completion_handler.lock().unwrap();
+            *p_cookie = Some(cookie_str);
             let _ = event_loop_proxy.send_event(CookieReadEvent {
                 m_type: EventType::Finish,
             });
@@ -119,12 +140,12 @@ pub fn read_cookie_until_sync<T: Fn(&String) -> bool + Send + 'static>(
             _ => (),
         }
     });
-    let result_cookie = rx.blocking_recv();
-    if result_cookie.is_none() {
-        Ok(String::from(""))
-    } else {
-        Ok(result_cookie.unwrap())
+    let mut p_latest_cookie = returned_cookie.lock().unwrap();
+    if p_latest_cookie.is_none() {
+        // mannualy close the window.
+        *p_latest_cookie = Some(String::new());
     }
+    Ok(p_latest_cookie.clone().unwrap())
 }
 
 pub async fn read_cookie_until<T: Fn(&String) -> bool + Send + 'static>(
