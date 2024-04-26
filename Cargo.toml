@@ -18,11 +18,11 @@ tao = { version = "0.24.1", features = ["serde", "rwh_05"] }
 tokio = { version = "1.35.1", features = ["full"] }
 wry = "0.35.2"
 
-[target.'cfg(macos)'.dependencies]
+[target.'cfg(target_os = "macos")'.dependencies]
 cocoa = "0.25.0"
 objc = "0.2.7"
 
-[target.'cfg(windows)'.dependencies]
+[target.'cfg(target_os = "windows")'.dependencies]
 webview2-com = "0.28.0"
 windows = { version = "0.52.0", features = ["Win32_System_Com", "Win32_Foundation", "implement"] }
 windows-core = { version = "0.52.0", features = ["implement"] }
