@@ -9,13 +9,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // println!("cookie_str: {}", cookie_str);
 
     let pattern = String::from("captcha_ticket_v2=");
-    let cookie_str = read_cookie_until(
-        "https://zhihu.com",
-        Arc::new(move |cookie_str: &String| {
-            println!("cookie_str: {}", cookie_str);
-            cookie_str.contains(&pattern)
-        }),
-    )
+    let cookie_str = read_cookie_until("https://zhihu.com", move |cookie_str: &String| {
+        println!("cookie_str: {}", cookie_str);
+        cookie_str.contains(&pattern)
+    })
     .await?;
 
     println!("cookie_str: {}", cookie_str);
