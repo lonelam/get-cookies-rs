@@ -25,7 +25,7 @@ async fn start_send_user_event_by_interval(event_loop_proxy: EventLoopProxy<Cook
     }
 }
 
-pub async fn read_cookie_until<T: Fn(&String) -> bool + Send + 'static>(
+pub fn read_cookie_until_sync<T: Fn(&String) -> bool + Send + 'static>(
     target_url: &str,
     matcher: T,
 ) -> Result<String, Box<dyn std::error::Error>> {
@@ -119,10 +119,17 @@ pub async fn read_cookie_until<T: Fn(&String) -> bool + Send + 'static>(
             _ => (),
         }
     });
-    let result_cookie = rx.recv().await;
+    let result_cookie = rx.blocking_recv();
     if result_cookie.is_none() {
         Ok(String::from(""))
     } else {
         Ok(result_cookie.unwrap())
     }
+}
+
+pub async fn read_cookie_until<T: Fn(&String) -> bool + Send + 'static>(
+    target_url: &str,
+    matcher: T,
+) -> Result<String, Box<dyn std::error::Error>> {
+    read_cookie_until_sync(target_url, matcher)
 }
