@@ -12,13 +12,18 @@ authors = ["Lonelam <lonelam@gmail.com>"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+block = "0.1.6"
+cocoa = "0.25.0"
 futures = "0.3.30"
+objc = "0.2.7"
 tao = { version = "0.24.1", features = ["serde", "rwh_05"] }
 tokio = { version = "1.35.1", features = ["full"] }
+wry = "0.35.2"
+
+[target.'cfg(windows)'.dependencies]
 webview2-com = "0.28.0"
 windows = { version = "0.52.0", features = ["Win32_System_Com", "Win32_Foundation", "implement"] }
 windows-core = { version = "0.52.0", features = ["implement"] }
-wry = "0.35.2"
 
 [[bin]]
 name = "get-cookies"

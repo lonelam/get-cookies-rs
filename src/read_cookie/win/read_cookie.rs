@@ -5,8 +5,8 @@ use tao::platform::windows::EventLoopBuilderExtWindows;
 use tokio::sync::{mpsc, oneshot};
 use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2_2;
 // use windows::Win32::System::Com::IUnknown;
-use crate::cookie_reader::read_from_cookie_manager;
-use crate::cookie_reader::{start_send_user_event_by_interval, CookieReadEvent};
+use cookie_reader::read_from_cookie_manager;
+use cookie_reader::{start_send_user_event_by_interval, CookieReadEvent};
 use windows_core::ComInterface;
 
 use tao::{
@@ -24,7 +24,6 @@ pub async fn read_cookie_until<T: Fn(&String) -> bool>(
 
     let (tx, mut rx) = mpsc::channel::<String>(32);
     let (event_loop_tx, event_loop_rx) = oneshot::channel::<EventLoopProxy<CookieReadEvent>>();
-    // let tx = Arc::new(Mutex::new(Some(tx))); // Wrap `tx` in `Option`, `Arc`, and `Mutex`
 
     let _ = std::thread::spawn(move || {
         let event_loop = EventLoopBuilder::<CookieReadEvent>::with_user_event()
