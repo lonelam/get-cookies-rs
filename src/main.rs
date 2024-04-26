@@ -15,6 +15,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     })
     .await?;
 
-    println!("cookie_str: {}", cookie_str);
+    println!("get matched cookie_str success: {}", cookie_str);
     Ok(())
 }

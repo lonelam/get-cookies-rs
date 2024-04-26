@@ -1,6 +1,6 @@
 [package]
 name = "get-cookies"
-version = "0.1.7"
+version = "0.1.8"
 edition = "2021"
 license = "MIT"
 description = "Get cookies from a pop-up window"
@@ -13,12 +13,14 @@ authors = ["Lonelam <lonelam@gmail.com>"]
 
 [dependencies]
 block = "0.1.6"
-cocoa = "0.25.0"
 futures = "0.3.30"
-objc = "0.2.7"
 tao = { version = "0.24.1", features = ["serde", "rwh_05"] }
 tokio = { version = "1.35.1", features = ["full"] }
 wry = "0.35.2"
+
+[target.'cfg(macos)'.dependencies]
+cocoa = "0.25.0"
+objc = "0.2.7"
 
 [target.'cfg(windows)'.dependencies]
 webview2-com = "0.28.0"

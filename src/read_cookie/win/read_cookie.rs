@@ -5,8 +5,8 @@ use tao::platform::windows::EventLoopBuilderExtWindows;
 use tokio::sync::{mpsc, oneshot};
 use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2_2;
 // use windows::Win32::System::Com::IUnknown;
-use cookie_reader::read_from_cookie_manager;
-use cookie_reader::{start_send_user_event_by_interval, CookieReadEvent};
+use super::cookie_reader::read_from_cookie_manager;
+use super::cookie_reader::{start_send_user_event_by_interval, CookieReadEvent};
 use windows_core::ComInterface;
 
 use tao::{
