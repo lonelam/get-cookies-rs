@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 // use windows::Win32::System::Com::IUnknown;
 use get_cookies::read_cookie_until;
 
@@ -9,7 +11,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pattern = String::from("captcha_ticket_v2=");
     let cookie_str = read_cookie_until(
         "https://zhihu.com",
-        Box::new(move |cookie_str: &String| {
+        Arc::new(move |cookie_str: &String| {
             println!("cookie_str: {}", cookie_str);
             cookie_str.contains(&pattern)
         }),

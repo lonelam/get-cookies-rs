@@ -27,7 +27,7 @@ async fn start_send_user_event_by_interval(event_loop_proxy: EventLoopProxy<Cook
 
 pub async fn read_cookie_until(
     target_url: &str,
-    matcher: Box<dyn Fn(&String) -> bool>,
+    matcher: Arc<dyn Fn(&String) -> bool>,
 ) -> Result<String, Box<dyn std::error::Error>> {
     let domain_str = String::from(target_url);
 
