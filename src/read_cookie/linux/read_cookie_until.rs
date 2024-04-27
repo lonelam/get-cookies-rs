@@ -4,8 +4,9 @@ use std::sync::{Arc, Mutex};
 use tao::event::{Event, StartCause, WindowEvent};
 use tao::event_loop::{ControlFlow, EventLoopProxy};
 use tao::platform::run_return::EventLoopExtRunReturn;
+use tao::platform::unix::WindowExtUnix;
 use tao::{event_loop::EventLoopBuilder, window::WindowBuilder};
-use wry::{WebView, WebViewBuilder, WebViewExtUnix};
+use wry::{WebView, WebViewBuilder, WebViewBuilderExtUnix, WebViewExtUnix};
 use webkit2gtk::{ CookieManagerExt, WebViewExt, WebsiteDataManagerExt};
 
 fn start_send_user_event_by_interval(
@@ -56,7 +57,9 @@ pub fn read_cookie_until_sync<T: Fn(&String) -> bool + Send + 'static>(
         .with_title("Login And Wait For The Window Closed")
         .build(&event_loop)
         .unwrap();
-    let webview: WebView = WebViewBuilder::new(&window)
+    let vbox = window.default_vbox().unwrap();
+    let builder = WebViewBuilder::new_gtk(vbox);
+    let webview: WebView = builder
         .with_incognito(true)
         .with_url(target_url)
         .expect("Failed to set URL")
@@ -66,46 +69,36 @@ pub fn read_cookie_until_sync<T: Fn(&String) -> bool + Send + 'static>(
     // event_loop_tx.send(event_loop_proxy).unwrap();
     let _ = start_send_user_event_by_interval(event_loop_proxy, p_returned_cookie_for_timer);
     let event_loop_proxy = event_loop.create_proxy();
-    // let completion_handler = block::ConcreteBlock::new(move |http_cookies: cocoa::base::id| {
-    //     // println!("Cookie has read");
-    //     let cookie_cnt = unsafe { NSArray::count(http_cookies) };
-    //     // println!("There're {} in arr", cookie_cnt);
-    //     let mut cookie_str = String::new();
-    //     for i in 0..cookie_cnt {
-    //         let cookie = unsafe { NSArray::objectAtIndex(http_cookies, i) };
-    //         let cookie_name = unsafe {
-    //             let name: cocoa::base::id = msg_send![cookie, name];
-    //             let name_str = std::ffi::CStr::from_ptr(name.UTF8String())
-    //                 .to_str()
-    //                 .unwrap();
-    //             name_str
-    //         };
-    //         let cookie_value = unsafe {
-    //             let value: cocoa::base::id = msg_send![cookie, value];
-    //             let value_str = std::ffi::CStr::from_ptr(value.UTF8String())
-    //                 .to_str()
-    //                 .unwrap();
-    //             value_str
-    //         };
-    //         cookie_str += cookie_name;
-    //         cookie_str += "=";
-    //         cookie_str += cookie_value;
-    //         if i != cookie_cnt - 1 {
-    //             cookie_str += ";";
-    //         }
-    //         // println!("The current cookie is {}={}", cookie_name, cookie_value);
-    //     }
-    //     // #[cfg(debug_assertions)]
-    //     // println!("The current cookies is: {}", cookie_str);
-    //     if pattern_matcher(&cookie_str) {
-    //         let mut p_cookie = p_returned_cookie_for_completion_handler.lock().unwrap();
-    //         *p_cookie = Some(cookie_str);
-    //         let _ = event_loop_proxy.send_event(CookieReadEvent {
-    //             m_type: EventType::Finish,
-    //         });
-    //     }
-    // })
-    // .copy();
+    let completion_handler = Arc::new(move |result:Result<Vec<soup::Cookie>, webkit2gtk::Error> | {
+        if result.is_err() {
+            println!("Error in completion handler: {}", result.unwrap_err());
+            return;
+        }
+        // println!("Cookie has read");
+        let cookies_vec = result.unwrap();
+        let cookie_cnt = cookies_vec.len();
+        // println!("There're {} in arr", cookie_cnt);
+        let mut cookie_str = String::new();
+        for i in 0..cookie_cnt {
+            let mut cookie = cookies_vec[i].clone();
+            cookie_str += cookie.name().unwrap().as_str();
+            cookie_str += "=";
+            cookie_str += cookie.value().unwrap().as_str();
+            if i != cookie_cnt - 1 {
+                cookie_str += ";";
+            }
+            // println!("The current cookie is {}={}", cookie_name, cookie_value);
+        }
+        // #[cfg(debug_assertions)]
+        // println!("The current cookies is: {}", cookie_str);
+        if pattern_matcher(&cookie_str) {
+            let mut p_cookie = p_returned_cookie_for_completion_handler.lock().unwrap();
+            *p_cookie = Some(cookie_str);
+            let _ = event_loop_proxy.send_event(CookieReadEvent {
+                m_type: EventType::Finish,
+            });
+        }
+    });
     event_loop.run_return(move |event, _, control_flow| {
         *control_flow = ControlFlow::Wait;
 
@@ -118,14 +111,11 @@ pub fn read_cookie_until_sync<T: Fn(&String) -> bool + Send + 'static>(
             Event::UserEvent(evt) => {
                 match evt.m_type {
                     EventType::CookieRead => {
-                        unsafe {
                             let webview = webview.webview();
                             let data_manager = webview.website_data_manager().unwrap();
                             let cookie_manager = data_manager.cookie_manager().unwrap();
-                            cookie_manager.cookies(&domain_str,  None::<&webkit2gtk::gio::Cancellable>, move |result:Result<Vec<soup::Cookie>, webkit2gtk::Error> | {
-                                println!("Cookie read finished");
-                            });
-                        }
+                            let complete_handler_clone = completion_handler.clone();
+                            cookie_manager.cookies(&domain_str,  None::<&webkit2gtk::gio::Cancellable>,move |result| complete_handler_clone(result));
                     }
                     EventType::Finish => *control_flow = ControlFlow::Exit,
                 }
