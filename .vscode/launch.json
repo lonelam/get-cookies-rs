@@ -1,17 +1,98 @@
 {
-  // Use IntelliSense to learn about possible attributes.
-  // Hover to view descriptions of existing attributes.
-  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-    {
-      "type": "lldb",
-      "request": "launch",
-      "name": "Cargo launch",
-      "cargo": {
-        "args": ["build", "--bin", "get-cookies"]
+      {
+          "type": "lldb",
+          "request": "launch",
+          "name": "Debug unit tests in library 'get-cookies'",
+          "cargo": {
+              "args": [
+                  "test",
+                  "--no-run",
+                  "--lib",
+                  "--package=get-cookies"
+              ],
+              "filter": {
+                  "name": "get-cookies",
+                  "kind": "lib"
+              }
+          },
+          "args": [],
+          "cwd": "${workspaceFolder}"
       },
-      "args": []
-    }
+      {
+          "type": "lldb",
+          "request": "launch",
+          "name": "Debug executable 'get-cookies'",
+          "cargo": {
+              "args": [
+                  "build",
+                  "--bin=get-cookies",
+                  "--package=get-cookies"
+              ],
+              "filter": {
+                  "name": "get-cookies",
+                  "kind": "bin"
+              }
+          },
+          "args": [],
+          "cwd": "${workspaceFolder}"
+      },
+      {
+          "type": "lldb",
+          "request": "launch",
+          "name": "Debug unit tests in executable 'get-cookies'",
+          "cargo": {
+              "args": [
+                  "test",
+                  "--no-run",
+                  "--bin=get-cookies",
+                  "--package=get-cookies"
+              ],
+              "filter": {
+                  "name": "get-cookies",
+                  "kind": "bin"
+              }
+          },
+          "args": [],
+          "cwd": "${workspaceFolder}"
+      },
+      {
+          "type": "lldb",
+          "request": "launch",
+          "name": "Debug example 'github'",
+          "cargo": {
+              "args": [
+                  "build",
+                  "--example=github",
+                  "--package=get-cookies"
+              ],
+              "filter": {
+                  "name": "github",
+                  "kind": "example"
+              }
+          },
+          "args": [],
+          "cwd": "${workspaceFolder}"
+      },
+      {
+          "type": "lldb",
+          "request": "launch",
+          "name": "Debug unit tests in example 'github'",
+          "cargo": {
+              "args": [
+                  "test",
+                  "--no-run",
+                  "--example=github",
+                  "--package=get-cookies"
+              ],
+              "filter": {
+                  "name": "github",
+                  "kind": "example"
+              }
+          },
+          "args": [],
+          "cwd": "${workspaceFolder}"
+      }
   ]
 }

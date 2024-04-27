@@ -1,24 +1,25 @@
 # get-cookies-rs
 [![Crates.io](https://img.shields.io/crates/v/get-cookies.svg)](https://crates.io/crates/get-cookies)
 
-English | [简体中文](README_zh.md)
-`get-cookies-rs` is a Rust library designed to facilitate the retrieval of cookies from any website using the `Wry` library for easy cross-platform compatibility. This makes it ideal for developers needing a consistent tool across Windows, macOS, and Linux, without relying on specific browsers which may enlarge your program size.
+[English](README.md) | [简体中文](README_zh.md)
+`get-cookies-rs` 是一个 Rust 库，设计用于使用 `Wry` 库从任何网站检索 cookies，以便轻松实现跨平台兼容性。这使它成为需要在 Windows、macOS 和 Linux 上使用一致工具的开发者的理想选择，而无需依赖可能会增大程序大小的特定浏览器。
 
+## 特点
+- **跨平台支持**：得益于 `Wry`，`get-cookies-rs` 可以无缝地在各种操作系统上运行，是跨平台应用程序的绝佳选择。
+- **异步 API**：库支持异步操作，使用 Rust 的现代 async/await 语法实现高效的非阻塞 I/O。
+- **灵活的 Cookie 检索**：允许用户基于可定制的条件检索 cookies，为网络抓取和自动化测试提供强大的解决方案。
 
-## Features
-- **Cross-Platform Support**: Thanks to `Wry`, `get-cookies-rs` operates seamlessly on various operating systems, making it an excellent choice for cross-platform applications.
-- **Asynchronous API**: The library supports asynchronous operations, utilizing Rust's modern async/await syntax for efficient, non-blocking I/O.
-- **Flexible Cookie Retrieval**: Allows users to retrieve cookies based on customizable conditions, offering robust solutions for web scraping and automated testing.
+## 安装
+要在您的项目中使用 `get-cookies-rs`，请将其添加到您的 Cargo.toml 依赖项中：
 
-## Installation
-To use `get-cookies-rs` in your project, add it to your `Cargo.toml` dependencies:
 
 ```toml
 [dependencies]
 get-cookies = "0.1.0"
 ```
 
-## Usage
+## 使用方法
+
 ```rust
 use std::{str::FromStr, sync::Arc};
 
@@ -45,7 +46,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let repository_page = client.get(repo_url).send().await?;
     let html_content = repository_page.text().await?;
     let auth_re = Regex::new(
-        r#"<form class="unstarred js-social-form" data-turbo="(.*)" action="(.*)/star" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="(.*)" autocomplete="off" />"#,
+        r#"<form class="unstarred js-social-form" data-turbo="(.*)" action="(.*)/star" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="(.*)" autocomplete="off" />"#
     )?;
     let auth_token = auth_re
         .captures(&html_content)
@@ -67,12 +68,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("{}", star_resp.text().await?);
     Ok(())
 }
-
-
 ```
 
-## Contributing
-We welcome contributions to make **get-cookies-rs** even better! If you're interested in contributing, please fork the repository, commit your changes, and submit a pull request. For significant changes, please first open an issue to discuss what you would like to change.
+## 贡献
+我们欢迎社区的贡献来使 **get-cookies-rs** 更好！如果您有兴趣贡献，请 fork 该仓库，提交您的更改，并提交一个 pull request。对于重大更改，请先开一个 issue 讨论您希望改变的内容。
 
-## License
-**get-cookies-rs** is distributed under the MIT License, which permits free use, modification, distribution, and private use of the software as long as copyright and license notices are preserved.
+## 许可证
+**get-cookies-rs** 根据 MIT 许可证发布，该许可证允许自由使用、修改、分发和私人使用软件，只要保留版权和许可声明。

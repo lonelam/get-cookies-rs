@@ -1,6 +1,7 @@
 use std::borrow::Borrow;
 use std::sync::Arc;
 use tao::event_loop::EventLoopProxy;
+use tao::platform::run_return::EventLoopExtRunReturn;
 use tao::platform::windows::EventLoopBuilderExtWindows;
 use tokio::sync::{mpsc, oneshot};
 use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2_2;
@@ -26,7 +27,7 @@ pub async fn read_cookie_until<T: Fn(&String) -> bool>(
     let (event_loop_tx, event_loop_rx) = oneshot::channel::<EventLoopProxy<CookieReadEvent>>();
 
     let _ = std::thread::spawn(move || {
-        let event_loop = EventLoopBuilder::<CookieReadEvent>::with_user_event()
+        let mut event_loop = EventLoopBuilder::<CookieReadEvent>::with_user_event()
             .with_any_thread(true)
             .build();
         let window = WindowBuilder::new()
@@ -50,7 +51,7 @@ pub async fn read_cookie_until<T: Fn(&String) -> bool>(
         let event_loop_proxy = event_loop.create_proxy();
         event_loop_tx.send(event_loop_proxy).unwrap();
 
-        event_loop.run(move |event, _, control_flow| {
+        let _ = event_loop.run_return(move |event, _, control_flow| {
             *control_flow = ControlFlow::Wait;
 
             match event {

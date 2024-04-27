@@ -54,7 +54,7 @@ pub fn read_from_cookie_manager(
                             // println!("{}: {}", name.to_string()?, value.to_string()?);
                         }
                     }
-                    tx.blocking_send(cookie_str).unwrap();
+                    let _ = tx.blocking_send(cookie_str);
                 }
                 Ok(())
             },
