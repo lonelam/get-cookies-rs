@@ -18,6 +18,11 @@
 get-cookies = "0.1.0"
 ```
 
+## Prerequisites
+Linux need extra browser gtklib installed, see [wry documentation](https://github.com/tauri-apps/wry/tree/wry-v0.39.3) to install.
+Windows and MacOS need no extra dependency.
+
+
 ## 使用方法
 
 ```rust

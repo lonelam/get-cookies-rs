@@ -18,6 +18,11 @@ To use `get-cookies-rs` in your project, add it to your `Cargo.toml` dependencie
 get-cookies = "0.1.0"
 ```
 
+## Prerequisites
+Linux need extra browser gtklib installed, see [wry documentation](https://github.com/tauri-apps/wry/tree/wry-v0.39.3) to install.
+Windows and MacOS need no extra dependency.
+
+
 ## Usage
 ```rust
 use std::{str::FromStr, sync::Arc};
