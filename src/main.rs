@@ -8,8 +8,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let cookie_str = read_cookie("https://juejin.cn").await?;
     // println!("cookie_str: {}", cookie_str);
 
-    let pattern = String::from("captcha_ticket_v2=");
-    let cookie_str = read_cookie_until("https://zhihu.com", move |cookie_str: &String| {
+    let pattern = String::from("logged_in=yes");
+    let cookie_str = read_cookie_until("https://github.com", move |cookie_str: &String| {
         println!("cookie_str: {}", cookie_str);
         cookie_str.contains(&pattern)
     })

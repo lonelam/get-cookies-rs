@@ -47,7 +47,10 @@ pub fn read_from_cookie_manager(
                             let mut value: PWSTR = PWSTR::null();
                             cookie_item.Name(&mut name)?;
                             cookie_item.Value(&mut value)?;
-                            cookie_str.push_str(&format!("{}={}\n", name.to_string()?, value.to_string()?));
+                            cookie_str.push_str(&format!("{}={}", name.to_string()?, value.to_string()?));
+                            if i != cnt - 1 {
+                                cookie_str.push_str(";");
+                            }
                             // println!("{}: {}", name.to_string()?, value.to_string()?);
                         }
                     }
