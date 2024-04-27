@@ -27,6 +27,10 @@ webview2-com = "0.28.0"
 windows = { version = "0.52.0", features = ["Win32_System_Com", "Win32_Foundation", "implement"] }
 windows-core = { version = "0.52.0", features = ["implement"] }
 
+[target.'cfg(target_os = "linux")'.dependencies]
+webkit2gtk = "2.0.1"
+soup3 = "0.5.0"
+
 [[bin]]
 name = "get-cookies"
 path = "src/main.rs"

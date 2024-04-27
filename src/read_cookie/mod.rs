@@ -13,4 +13,4 @@ pub use mac::read_cookie_until::*;
 mod linux;
 
 #[cfg(target_os = "linux")]
-pub use linux::read_cookie::*;
+pub use linux::read_cookie_until::*;
