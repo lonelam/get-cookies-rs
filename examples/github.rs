@@ -30,7 +30,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     })
     .await?;
 
-    // println!("get matched cookie_str success: {}", cookie_str);
+    println!("get matched cookie_str success.");
 
     let cookies = cookie_str.split(';');
     for c_str in cookies {
@@ -58,6 +58,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let auth_token = match_result.map_or(String::new(), |r| r[3].to_string());
 
+    // println!("cookies_before_star: {:?}", cookies_before_star);
     let cookies_before_star = cookie_store
         .cookies(&reqwest::Url::from_str(&format!("{}/star", repo_url))?)
         .unwrap();
@@ -79,7 +80,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // println!("star_req: {:?}", star_req);
 
     let resp = client.execute(star_req).await?;
-    // println!("resp: {:?}", resp);
+    println!("resp: {:?}", resp.text().await?);
 
     Ok(())
 }
