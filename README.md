@@ -17,7 +17,7 @@ To use `get-cookies-rs` in your project, add it to your `Cargo.toml` dependencie
 
 ```toml
 [dependencies]
-get-cookies = "0.1.0"
+get-cookies = "0.2.0"
 ```
 
 ## Prerequisites

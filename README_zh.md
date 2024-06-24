@@ -17,7 +17,7 @@
 
 ```toml
 [dependencies]
-get-cookies = "0.1.0"
+get-cookies = "0.2.0"
 ```
 
 ## Prerequisites
