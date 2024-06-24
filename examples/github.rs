@@ -8,7 +8,6 @@ use get_cookies::read_cookie_until;
 use regex::Regex;
 use reqwest;
 use reqwest::cookie::CookieStore;
-use reqwest::header::HeaderValue;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

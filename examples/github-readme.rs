@@ -2,7 +2,7 @@ use std::{str::FromStr, sync::Arc};
 
 use get_cookies::read_cookie_until;
 use regex::Regex;
-use reqwest::header::{ACCEPT, COOKIE, ORIGIN, REFERER, USER_AGENT};
+use reqwest::header::{ACCEPT, COOKIE, ORIGIN, REFERER};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

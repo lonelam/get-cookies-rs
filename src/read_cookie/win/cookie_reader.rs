@@ -14,9 +14,7 @@ use webview2_com::{
 
 use windows_core::{HSTRING, PWSTR};
 
-pub async fn start_send_user_event_by_interval(event_loop_proxy: EventLoopProxy<CookieReadEvent>, print_messages: bool) {
-    if print_messages { println!("Start ticking...") };
-
+pub async fn start_send_user_event_by_interval(event_loop_proxy: EventLoopProxy<CookieReadEvent>) {
     let mut interval = time::interval(Duration::from_secs(1));
     loop {
         interval.tick().await;
@@ -51,7 +49,6 @@ pub fn read_from_cookie_manager(
                             if i != cnt - 1 {
                                 cookie_str.push_str(";");
                             }
-                            // println!("{}: {}", name.to_string()?, value.to_string()?);
                         }
                     }
                     let _ = tx.blocking_send(cookie_str);
@@ -60,13 +57,9 @@ pub fn read_from_cookie_manager(
             },
         ));
 
-    // println!("Checking for cookies from {}", current_host);
-
     unsafe {
         cookie_manager
             .GetCookies(&current_host_name, &handler)
             .unwrap();
     }
-
-    // println!("End of GetCookies call");
 }

@@ -4,47 +4,35 @@ use tao::platform::run_return::EventLoopExtRunReturn;
 use tao::platform::windows::EventLoopBuilderExtWindows;
 use tokio::sync::{mpsc, oneshot};
 use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2_2;
+
 use super::cookie_reader::read_from_cookie_manager;
 use super::cookie_reader::{start_send_user_event_by_interval, CookieReadEvent};
 use windows_core::ComInterface;
 
 use tao::{
-    event::{Event, StartCause, WindowEvent},
+    event::{Event, WindowEvent},
     event_loop::{ControlFlow, EventLoopBuilder},
     window::WindowBuilder,
 };
 use wry::{WebView, WebViewBuilder, WebViewExtWindows};
 
-pub struct CookieReadingOptions {
-    pub window_title: String,
-    pub print_messages: bool,
-}
-
-impl CookieReadingOptions {
-    pub fn default() -> Self {
-        Self {
-            window_title: String::from("Login And Wait For The Window Closed"),
-            print_messages: true
-        }
-    }
-}
-
-pub async fn read_cookie_with_options<T: Fn(&String) -> bool>(
+pub async fn read_cookie_with_title<T: Fn(&String) -> bool>(
     target_url: &str,
     matcher: T,
-    options: CookieReadingOptions
+    window_title: &str
 ) -> Result<String, Box<dyn std::error::Error>> {
     let domain_str = String::from(target_url);
 
     let (tx, mut rx) = mpsc::channel::<String>(32);
     let (event_loop_tx, event_loop_rx) = oneshot::channel::<EventLoopProxy<CookieReadEvent>>();
 
+    let window_title = window_title.to_owned();
     let _ = std::thread::spawn(move || {
         let mut event_loop = EventLoopBuilder::<CookieReadEvent>::with_user_event()
             .with_any_thread(true)
             .build();
         let window = WindowBuilder::new()
-            .with_title(&options.window_title)
+            .with_title(window_title)
             .build(&event_loop)
             .unwrap();
         let webview: WebView = WebViewBuilder::new(&window)
@@ -68,7 +56,6 @@ pub async fn read_cookie_with_options<T: Fn(&String) -> bool>(
             *control_flow = ControlFlow::Wait;
 
             match event {
-                Event::NewEvents(StartCause::Init) => if options.print_messages { println!("Wry has started!") },
                 Event::WindowEvent {
                     event: WindowEvent::CloseRequested,
                     ..
@@ -84,7 +71,7 @@ pub async fn read_cookie_with_options<T: Fn(&String) -> bool>(
 
     let event_loop_proxy = event_loop_rx.await?;
 
-    let _ = tokio::spawn(start_send_user_event_by_interval(event_loop_proxy, options.print_messages));
+    let _ = tokio::spawn(start_send_user_event_by_interval(event_loop_proxy));
     loop {
         let cookie_str = rx.recv().await;
         if cookie_str.is_none() {
@@ -101,7 +88,7 @@ pub async fn read_cookie_with_options<T: Fn(&String) -> bool>(
 }
 
 pub async fn read_cookie_until<T: Fn(&String) -> bool>(target_url: &str, matcher: T) -> Result<String, Box<dyn std::error::Error>> {
-    read_cookie_with_options(target_url, matcher, CookieReadingOptions::default()).await
+    read_cookie_with_title(target_url, matcher, "Login And Wait For The Window Closed").await
 }
 
 pub async fn read_cookie(target_url: &str) -> Result<String, Box<dyn std::error::Error>> {
