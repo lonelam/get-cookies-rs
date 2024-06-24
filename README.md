@@ -6,6 +6,7 @@ English | [简体中文](README_zh.md)
 `get-cookies-rs` is a Rust library designed to facilitate the retrieval of cookies from any website using the `Wry` library for easy cross-platform compatibility. This makes it ideal for developers needing a consistent tool across Windows, macOS, and Linux, without relying on specific browsers which may enlarge your program size.
 
 ## Features
+
 - **Cross-Platform Support**: Thanks to `Wry`, `get-cookies-rs` operates seamlessly on various operating systems, making it an excellent choice for cross-platform applications.
 - **Asynchronous API**: The library supports asynchronous operations, utilizing Rust's modern async/await syntax for efficient, non-blocking I/O.
 - **Flexible Cookie Retrieval**: Allows users to retrieve cookies based on customizable conditions, offering robust solutions for web scraping and automated testing.
