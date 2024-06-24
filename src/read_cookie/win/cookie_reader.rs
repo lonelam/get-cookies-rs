@@ -14,8 +14,8 @@ use webview2_com::{
 
 use windows_core::{HSTRING, PWSTR};
 
-pub async fn start_send_user_event_by_interval(event_loop_proxy: EventLoopProxy<CookieReadEvent>) {
-    println!("Start ticking...");
+pub async fn start_send_user_event_by_interval(event_loop_proxy: EventLoopProxy<CookieReadEvent>, print_messages: bool) {
+    if print_messages { println!("Start ticking...") };
 
     let mut interval = time::interval(Duration::from_secs(1));
     loop {
