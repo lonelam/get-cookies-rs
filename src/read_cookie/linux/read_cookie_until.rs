@@ -1,7 +1,6 @@
 use super::user_event::{CookieReadEvent, EventType};
-use std::error::Error;
 use std::sync::{Arc, Mutex};
-use tao::event::{Event, StartCause, WindowEvent};
+use tao::event::{Event, WindowEvent};
 use tao::event_loop::{ControlFlow, EventLoopProxy};
 use tao::platform::run_return::EventLoopExtRunReturn;
 use tao::platform::unix::WindowExtUnix;
@@ -13,7 +12,6 @@ fn start_send_user_event_by_interval(
     event_loop_proxy: EventLoopProxy<CookieReadEvent>,
     cookie_returned: Arc<Mutex<Option<String>>>,
 ) -> std::thread::JoinHandle<()> {
-    println!("Start ticking...");
     // Set the interval duration
     let interval = std::time::Duration::from_secs(1);
 
@@ -41,9 +39,10 @@ fn start_send_user_event_by_interval(
     handle
 }
 
-pub fn read_cookie_until_sync<T: Fn(&String) -> bool + Send + 'static>(
+pub async fn read_cookie_with_title<T: Fn(&String) -> bool + Send + 'static>(
     target_url: &str,
     matcher: T,
+    window_title: &str
 ) -> Result<String, Box<dyn std::error::Error>> {
     let domain_str = String::from(target_url);
 
@@ -52,9 +51,10 @@ pub fn read_cookie_until_sync<T: Fn(&String) -> bool + Send + 'static>(
     let p_returned_cookie_for_completion_handler = returned_cookie.clone();
     let p_returned_cookie_for_timer = returned_cookie.clone();
 
+    let window_title = window_title.to_owned();
     let mut event_loop = EventLoopBuilder::<CookieReadEvent>::with_user_event().build();
     let window = WindowBuilder::new()
-        .with_title("Login And Wait For The Window Closed")
+        .with_title(window_title)
         .build(&event_loop)
         .unwrap();
     let vbox = window.default_vbox().unwrap();
@@ -103,7 +103,6 @@ pub fn read_cookie_until_sync<T: Fn(&String) -> bool + Send + 'static>(
         *control_flow = ControlFlow::Wait;
 
         match event {
-            Event::NewEvents(StartCause::Init) => println!("Wry has started!"),
             Event::WindowEvent {
                 event: WindowEvent::CloseRequested,
                 ..
@@ -135,5 +134,6 @@ pub async fn read_cookie_until<T: Fn(&String) -> bool + Send + 'static>(
     target_url: &str,
     matcher: T,
 ) -> Result<String, Box<dyn std::error::Error>> {
-    read_cookie_until_sync(target_url, matcher)
+    read_cookie_with_title(target_url, matcher, "Login And Wait For The Window Closed").await
 }
+
