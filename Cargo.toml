@@ -18,10 +18,6 @@ tao = { version = "0.24.1", features = ["serde", "rwh_05"] }
 tokio = { version = "1.35.1", features = ["full"] }
 wry = "0.35.2"
 
-[dev-dependencies]
-reqwest = { version = "0.12.4", features = ["json", "cookies", "socks", "multipart"] }
-regex = "1.10.4"
-
 [target.'cfg(target_os = "macos")'.dependencies]
 cocoa = "0.25.0"
 objc = "0.2.7"
